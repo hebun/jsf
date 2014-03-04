@@ -1,5 +1,4 @@
 
-
 import java.io.Serializable;
 
 import javax.faces.bean.ManagedBean;
@@ -19,4 +18,7 @@ public class HelloBean implements Serializable {
 		this.name = name;
 	}
 
+	public void clicked() {
+
+	}
 }
