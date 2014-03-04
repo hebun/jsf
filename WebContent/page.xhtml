@@ -10,9 +10,12 @@
 
     <ui:define name="content">
         <h1>New content here</h1>
+        <h:form>
      <h:outputText value="#{helloBean.name}"></h:outputText>
         <p>
         <h:commandButton value="click me" action="#{helloBean.clicked}"></h:commandButton>
         </p>
+        </h:form>
     </ui:define>
+    
 </ui:composition>
