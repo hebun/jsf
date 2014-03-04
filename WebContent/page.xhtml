@@ -11,6 +11,8 @@
     <ui:define name="content">
         <h1>New content here</h1>
      <h:outputText value="#{helloBean.name}"></h:outputText>
-        <p>Blah blah</p>
+        <p>
+        <h:commandButton value="click me" action="#{helloBean.clicked}"></h:commandButton>
+        </p>
     </ui:define>
 </ui:composition>

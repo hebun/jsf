@@ -18,7 +18,10 @@ public class HelloBean implements Serializable {
 		this.name = name;
 	}
 
-	public void clicked() {
+	public String clicked() {
+		setName("clicked the button");
+		System.out.println("clicked");
+		return "true";
 
 	}
 }
