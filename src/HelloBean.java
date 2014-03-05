@@ -81,4 +81,10 @@ public class HelloBean implements Serializable {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+
+	public String comAction() {
+
+		System.out.println("com action called");
+		return "okay";
+	}
 }
