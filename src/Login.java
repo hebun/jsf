@@ -3,14 +3,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpSession;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
 import org.primefaces.context.RequestContext;
+
+import model.*;
 
 @SuppressWarnings("serial")
 @ManagedBean
@@ -18,8 +26,8 @@ import org.primefaces.context.RequestContext;
 public class Login implements Serializable {
 
 	private boolean isDebug;
-	public String email;
-	private String name;
+	public String password;
+	private String username;
 	private List<String> list = null;
 
 	public Login() {
@@ -54,39 +62,31 @@ public class Login implements Serializable {
 		this.isDebug = isDebug;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public String clicked() {
-		if (this.list == null) {
-
-		}
-		setName("clicked the button");
-		System.out.println("..");
-		setIsDebug(!getIsDebug());
-
-		setEmail("updated via ajax");
 
 		return "true";
 
 	}
 
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	public String listen() {
 
 		return "from listen method";
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
 	}
 
 	public String comAction() {
@@ -100,30 +100,53 @@ public class Login implements Serializable {
 
 		ResourceBundle bundle = ResourceBundle.getBundle("util.hello",
 				FacesContext.getCurrentInstance().getViewRoot().getLocale());
-		
+
 		String message = bundle.getString(resourceBundleKey);
-		
+
 		return message;
 	}
 
 	public void login(ActionEvent actionEvent) {
-		RequestContext context = RequestContext.getCurrentInstance();
-		FacesMessage msg = null;
-		boolean loggedIn = false;
 
-		if (this.name != null && name.equals("admin") && email != null
-				&& email.equals("admin")) {
-			loggedIn = true;
-			msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Welcome", name);
-		} else {
-			loggedIn = false;
+		java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.OFF);
+		Session ss = null;
+		try {
+			Configuration cfg = new Configuration().configure();
+			StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()
+					.applySettings(cfg.getProperties());
+			SessionFactory factory = cfg.buildSessionFactory(builder.build());
 
-			msg = new FacesMessage(FacesMessage.SEVERITY_ERROR,
-					getResourceBundleString("util.hello", "invalidCred"),
-					"Invalid credentials");
+			ss = factory.openSession();
+			ss.beginTransaction();
+
+			@SuppressWarnings("unchecked")
+			List<Member> list = ss.createCriteria(Member.class).list();
+
+			RequestContext context = RequestContext.getCurrentInstance();
+			FacesMessage msg = null;
+			boolean loggedIn = false;
+
+			if (list.size() > 0) {
+				loggedIn = true;
+				HttpSession session = (HttpSession) FacesContext
+						.getCurrentInstance().getExternalContext()
+						.getSession(false);
+				;
+				session.setAttribute("username", username);
+				msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Welcome",
+						username);
+			} else {
+				loggedIn = false;
+
+				msg = new FacesMessage(FacesMessage.SEVERITY_ERROR,
+						getResourceBundleString("util.hello", "invalidCred"),
+						"Invalid credentials");
+			}
+
+			FacesContext.getCurrentInstance().addMessage("auth", msg);
+			context.addCallbackParam("loggedIn", loggedIn);
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
 		}
-
-		FacesContext.getCurrentInstance().addMessage("auth", msg);
-		context.addCallbackParam("loggedIn", loggedIn);
 	}
 }

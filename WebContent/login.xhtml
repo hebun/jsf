@@ -30,7 +30,7 @@ body {
 }
 </style>
 </h:head>
-<h:body>
+<h:body> 
 	<f:view locale="tr">
 		<p:panel header="ClickCart Otomasyon" styleClass="parentPanel">
 			<h:form id="loginForm" styleClass="loginPanel">
@@ -46,7 +46,7 @@ body {
 
 						<p:inputText required="true"
 							requiredMessage="#{msg.usernameRequired}" id="username"
-							value="#{login.name}"></p:inputText>
+							value="#{login.username}"></p:inputText>
 
 						<p:spacer></p:spacer>
 
@@ -56,7 +56,7 @@ body {
 
 						<p:password required="true"
 							requiredMessage="#{msg.passwordRequired}" id="password"
-							value="#{login.email}" feedback="false"></p:password>
+							value="#{login.password}" feedback="false"></p:password>
 
 						<p:spacer></p:spacer>
 
