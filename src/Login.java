@@ -16,6 +16,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.criterion.Restrictions;
 import org.primefaces.context.RequestContext;
 
 import model.*;
@@ -120,7 +121,9 @@ public class Login implements Serializable {
 			ss.beginTransaction();
 
 			@SuppressWarnings("unchecked")
-			List<Member> list = ss.createCriteria(Member.class).list();
+			List<Member> list = ss.createCriteria(Member.class)
+					.add(Restrictions.eq("username", username))
+					.add(Restrictions.eq("password", password)).list();
 
 			RequestContext context = RequestContext.getCurrentInstance();
 			FacesMessage msg = null;
@@ -133,20 +136,20 @@ public class Login implements Serializable {
 						.getSession(false);
 				;
 				session.setAttribute("username", username);
-				msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Welcome",
-						username);
+				FacesContext.getCurrentInstance().getExternalContext()
+						.redirect("home.faces");
 			} else {
 				loggedIn = false;
 
 				msg = new FacesMessage(FacesMessage.SEVERITY_ERROR,
 						getResourceBundleString("util.hello", "invalidCred"),
 						"Invalid credentials");
+				FacesContext.getCurrentInstance().addMessage("auth", msg);
+				context.addCallbackParam("loggedIn", loggedIn);
 			}
 
-			FacesContext.getCurrentInstance().addMessage("auth", msg);
-			context.addCallbackParam("loggedIn", loggedIn);
 		} catch (Exception ex) {
-			System.out.println(ex.getMessage());
+			ex.printStackTrace();
 		}
 	}
 }
