@@ -16,41 +16,63 @@
 	</h:outputStylesheet>
 
 	<ui:define name="content">
+
 		<h:form id="form">
 
 			<p:tabView id="tabView" activeIndex="#{members.activeIndex}">
 				<p:ajax update=":form:tabView" event="tabClose"
 					listener="#{members.onTabClose}"></p:ajax>
-				<p:ajax update=":form:tabView" event="tabChange"
-					listener="#{members.onTabChange}"></p:ajax>
+			
 				<p:tab title="#{msg.members}" id="mainTab"
 					disabled="#{members.detailRendered}">
 
-					<p:toolbar>
+					<p:toolbar id="toolbar">
 						<p:toolbarGroup align="left">
 							<p:commandButton id="viewButton" value="#{msg.add}"
-								icon="ui-icon-search" update=":form:tabView"
+								icon="ui-icon-circle-plus" update=":form:tabView"
 								actionListener="#{members.add}" />
 							<p:separator />
 							<p:commandButton value="#{msg.edit}" icon="ui-icon-document"
-								update=":form:tabView" actionListener="#{members.edit}" />
+								update=":form:tabView" disabled="#{members.selected==null}"
+								actionListener="#{members.edit}" widgetVar="editButton" />
+							<p:separator />
+							<p:commandButton value="#{msg.delete}"
+								icon="ui-icon-circle-close" update=":form:tabView:memberTable"
+								actionListener="#{members.delete}"
+								disabled="#{members.selected==null}" widgetVar="delButton">
+								<p:confirm header="Onayla" message="#{msg.sureToDelete}"
+									icon="ui-icon-alert" />
+							</p:commandButton>
+							<p:separator />
+							<p:commandButton value="#{msg.refresh}" icon="ui-icon-refresh"
+								update=":form:tabView" actionListener="#{members.refresh}" />
+							<p:separator />
+
+							<button type="button" 
+								onclick="PF('columnsDialog').show()"
+								class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-left"
+								id="editTableButton">
+								<span class="ui-button-icon-left ui-icon ui-c ui-icon-document"></span>
+								<span class="ui-button-text ui-c">#{msg.editTable}</span>
+							</button>
+							<p:separator />
 
 						</p:toolbarGroup>
 
 					</p:toolbar>
 					<p:dataTable value="#{members.members}" var="var" paginator="false"
 						selection="#{members.selected}" selectionMode="single"
-						id="memberTable" rowKey="#{var.id}">
+						id="memberTable" widgetVar="grid" rowKey="#{var.id}">
+						<p:ajax event="rowSelect" listener="#{members.onRowSelect}"
+							immediate="true" update=":form:tabView:toolbar"></p:ajax>
 
-
-						<p:column headerText="Email" id="email">        #{var.email}  
-			        </p:column>
-						<p:column headerText="Sirket" id="company"> 	       #{var.company}  
-					 </p:column>
-						<p:column headerText="Yetkili" id="yetkili"> 	       #{var.yetkili}  
-					 </p:column>
-						<p:column headerText="Username" id="username"> 	       #{var.username}  
-					 </p:column>
+						<p:columns value="#{members.columns}" var="column"
+							columnIndexVar="colIndex">
+							<f:facet name="header">#{column.header}</f:facet>
+					
+					#{var[column.column]}
+					
+					</p:columns>
 
 					</p:dataTable>
 				</p:tab>
@@ -80,7 +102,9 @@
 
 								<h:outputLabel for="password" value="#{msg.password}"></h:outputLabel>
 								<p:inputText id="password"
-									value="#{members.currentRow.password}"></p:inputText>
+									value="#{members.currentRow.password}">
+
+								</p:inputText>
 								<h:outputLabel for="bakiye" value="Bakiye"></h:outputLabel>
 								<p:inputText
 									onkeypress="if((event.which &lt; 48 &#38;&#38; event.which &gt; 31 )  || event.which &gt; 57) return false;"
@@ -89,8 +113,7 @@
 								<p:inputText id="yetkili" value="#{members.currentRow.yetkili}"></p:inputText>
 								<f:facet name="footer">
 									<p:commandButton icon="ui-icon-save" value="Kaydet"
-										actionListener="#{members.save}"
-										oncomplete="console.info(PF('secondTab'))"></p:commandButton>
+										actionListener="#{members.save}" update=":form:tabView"></p:commandButton>
 								</f:facet>
 							</p:panelGrid>
 
@@ -112,8 +135,44 @@
 						</p:column>
 					</p:panelGrid>
 				</p:tab>
+
 			</p:tabView>
+			<p:confirmDialog global="true" showEffect="fade" hideEffect="explode">
+				<p:commandButton value="Evet" type="button"
+					styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+				<p:commandButton value="Hayir" type="button"
+					styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+			</p:confirmDialog>
+
+			<p:dialog header="#{msg.editTable}" widgetVar="columnsDialog"
+				resizable="false" width="400" showEffect="clip" hideEffect="fold"
+				id="dialog">
+
+				<h:panelGrid id="columns" columns="2" cellpadding="5">
+					<table>
+						<ui:repeat value="#{members.columns}" var="col" varStatus="status">
+							<tr>
+								<td><h:outputText value="#{col.column}" id="col#{col.id}" />
+								</td>
+								<td><h:inputText value="#{col.header}" id="head#{col.id}" />
+								</td>
+							</tr>
+
+						</ui:repeat>
+					</table>
+					<f:facet name="footer">
+						<p:commandButton icon="ui-icon-save" value="Kaydet"
+							actionListener="#{members.saveColumns}" update=":form:tabView"></p:commandButton>
+					</f:facet>
+				</h:panelGrid>
+
+			</p:dialog>
 		</h:form>
+		<script type="text/javascript">
+		$(document).ready(function(){
+	
+		});
+	</script>
 	</ui:define>
 
 </ui:composition>

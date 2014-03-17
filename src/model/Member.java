@@ -1,16 +1,17 @@
 // default package
 // Generated Mar 8, 2014 1:06:30 PM by Hibernate Tools 3.4.0.CR1
 package model;
+
+import static javax.persistence.GenerationType.IDENTITY;
+
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.faces.bean.ManagedProperty;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-
-import static javax.persistence.GenerationType.IDENTITY;
-
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -36,6 +37,7 @@ public class Member implements java.io.Serializable {
 	private String membercol;
 	private Set<Cart> carts = new HashSet<Cart>(0);
 	private Set<Move> moves = new HashSet<Move>(0);
+	
 
 	public Member() {
 	}

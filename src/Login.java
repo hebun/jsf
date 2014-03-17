@@ -29,6 +29,35 @@ public class Login implements Serializable {
 	private boolean isDebug;
 	public String password;
 	private String username;
+	private String status;
+	private boolean isAdmin;
+	private Member member;
+
+	public Member getMember() {
+		return member;
+	}
+
+	public void setMember(Member member) {
+		this.member = member;
+	}
+
+	public boolean isAdmin() {
+		return isAdmin;
+	}
+
+	public void setAdmin(boolean isAdmin) {
+		this.isAdmin = isAdmin;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.isAdmin = status.equals("ADMIN");
+		this.status = status;
+	}
+
 	private List<String> list = null;
 
 	public Login() {
@@ -136,6 +165,15 @@ public class Login implements Serializable {
 						.getSession(false);
 				;
 				session.setAttribute("username", username);
+				
+				setStatus(list.get(0).getStatus());
+				
+				setMember(list.get(0));
+				session.setAttribute("member", getMember());
+				
+				session.setAttribute("status",
+						list.get(0).getStatus());
+				System.out.println("setting status:"+list.get(0).getStatus());
 				FacesContext.getCurrentInstance().getExternalContext()
 						.redirect("home.faces");
 			} else {

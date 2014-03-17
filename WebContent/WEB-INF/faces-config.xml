@@ -11,18 +11,34 @@
 			<supported-locale>en</supported-locale>
 		</locale-config>
 		<resource-bundle>
-			<base-name>util.hello</base-name>
+			<base-name>util.Text</base-name>
 			<var>msg</var>
 		</resource-bundle>
 	</application>
+	<converter>
+		<description></description>
+		<converter-id>MemberConverter</converter-id>
+		<converter-class>MemberConverter</converter-class>
+	</converter>
 	<managed-bean>
 		<managed-bean-name>app</managed-bean-name>
 		<managed-bean-class>App</managed-bean-class>
 		<managed-bean-scope>session</managed-bean-scope>
 	</managed-bean>
 	<managed-bean>
+		<managed-bean-name>login</managed-bean-name>
+		<managed-bean-class>Login</managed-bean-class>
+		<managed-bean-scope>session</managed-bean-scope>
+	</managed-bean>
+	<managed-bean>
+	
 		<managed-bean-name>members</managed-bean-name>
 		<managed-bean-class>Members</managed-bean-class>
-		<managed-bean-scope>session</managed-bean-scope>
+		<managed-bean-scope>view</managed-bean-scope>
+	</managed-bean>
+		<managed-bean>
+		<managed-bean-name>carts</managed-bean-name>
+		<managed-bean-class>Carts</managed-bean-class>
+		<managed-bean-scope>view</managed-bean-scope>
 	</managed-bean>
 </faces-config>

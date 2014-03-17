@@ -1,6 +1,5 @@
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -10,12 +9,13 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpSession;
 
 import model.Cart;
 import model.Gridfield;
-
 import model.Member;
 
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -29,22 +29,22 @@ import org.primefaces.event.TabCloseEvent;
 @SuppressWarnings("serial")
 @ViewScoped
 @ManagedBean
-public class Members implements Serializable {
+public class Carts implements Serializable {
 
-	private List<Member> members;
-	private Member selected;
+	private List<Cart> carts;
+	private Cart selected;
 	private boolean detailRendered;
 	private int activeIndex;
-	private Member currentRow;
+	private Cart currentRow;
 	Session ss = null;
 	private List<Gridfield> columns = new ArrayList<Gridfield>();
-	private int gridId = 1;
-	
+	private int gridId = 2;
+	private List<Member> members;
+	private Member selectedMember;
+
 	@ManagedProperty(value = "#{login}")
 	private Login login;
 
-	
-	
 	public int getGridId() {
 		return gridId;
 	}
@@ -58,13 +58,22 @@ public class Members implements Serializable {
 	}
 
 	public void setLogin(Login login) {
+		System.out.println("set login called ");
 		this.login = login;
 	}
 
-	@SuppressWarnings("unchecked")
-	public Members() {
+	public Member getSelectedMember() {
+		return selectedMember;
+	}
+
+	public void setSelectedMember(Member selectedMember) {
+		this.selectedMember = selectedMember;
+	}
+
+	public Carts() {
+
 		java.util.logging.Logger.getLogger("org.hibernate").setLevel(Level.OFF);
-		System.out.println("Thanks for creating me");
+		System.out.println("Thanks for creating carts");
 		activeIndex = 0;
 		detailRendered = false;
 		Configuration configuration = new Configuration();
@@ -74,40 +83,15 @@ public class Members implements Serializable {
 		SessionFactory factory = cfg.buildSessionFactory(builder.build());
 
 		this.ss = factory.openSession();
-		try {
-
-			ss.beginTransaction();
-
-			List<Member> list = ss.createCriteria(Member.class).list();
-
-			columns = ss.createCriteria(Gridfield.class)
-					.add(Restrictions.eq("gridId", this.gridId)).list();
-
-			System.out.println("mem size:" + list.size());
-			setMembers(list);
-			ss.getTransaction().commit();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			ss.getTransaction().rollback();
-			;
-		} finally {
-
-		}
+		this.refresh(null);
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<Cart> getSelCarts() {
-		if (this.currentRow == null) {
-			setSelCarts(new ArrayList<Cart>());
-		}
-
-		return (List<Cart>) this.currentRow.getCarts();
-
+	public List<Member> getMembers() {
+		return members;
 	}
 
-	public void setSelCarts(List<Cart> selCarts) {
-		this.currentRow.setCarts(new HashSet<Cart>(selCarts));
-
+	public void setMembers(List<Member> members) {
+		this.members = members;
 	}
 
 	public boolean isDetailRendered() {
@@ -117,7 +101,7 @@ public class Members implements Serializable {
 
 	public void save(ActionEvent event) {
 
-		if (validateMember(currentRow)) {
+		if (validateCart(currentRow)) {
 			try {
 
 				ss.beginTransaction();
@@ -142,7 +126,6 @@ public class Members implements Serializable {
 
 			ss.beginTransaction();
 			for (Gridfield f : columns) {
-
 				if (f.getHeader().equals("")) {
 					ss.delete(f);
 				} else {
@@ -163,14 +146,8 @@ public class Members implements Serializable {
 
 	}
 
-	private boolean validateMember(Member currentRow2) {
-		if (currentRow2.getPassword().length() < 4) {
-			FacesMessage message = new FacesMessage(
-					FacesMessage.SEVERITY_ERROR,
-					"Sifre en az 4 basamakli olmali.", "");
-			FacesContext.getCurrentInstance().addMessage(null, message);
-			return false;
-		}
+	private boolean validateCart(Cart currentRow2) {
+
 		return true;
 	}
 
@@ -197,7 +174,7 @@ public class Members implements Serializable {
 	public void add(ActionEvent event) {
 		System.out.println("add called");
 		selected = null;
-		currentRow = new Member();
+		currentRow = new Cart();
 		setDetailRendered(true);
 		setActiveIndex(1);
 		System.out.println(getActiveIndex() + ".lll");
@@ -229,7 +206,7 @@ public class Members implements Serializable {
 			}
 		}
 		selected = null;
-		currentRow = new Member();
+		currentRow = new Cart();
 	}
 
 	public void onRowSelect(SelectEvent even) {
@@ -244,29 +221,44 @@ public class Members implements Serializable {
 
 			ss.beginTransaction();
 
-			List<Member> list = ss.createCriteria(Member.class).list();
+			Criteria criteria = ss.createCriteria(Cart.class);
 
-			setMembers(list);
+			HttpSession session = (HttpSession) FacesContext
+					.getCurrentInstance().getExternalContext()
+					.getSession(false);
+			Member mem = (Member) session.getAttribute("member");
+			if (!mem.getStatus().equals("ADMIN")) {
+
+				criteria.add(Restrictions.eq("member", mem));
+
+			}
+
+			List<Cart> list = criteria.list();
+
 			columns = ss.createCriteria(Gridfield.class)
 					.add(Restrictions.eq("gridId", this.gridId)).list();
-
-			System.out.println("mem size:" + columns.size());
+			members = ss.createCriteria(Member.class).list();
+			System.out.println("mem size:" + list.size());
+			setCarts(list);
 			ss.getTransaction().commit();
-		} catch (Exception e) {
-			System.out.println("ex in refresh");
-			e.printStackTrace();
+		} catch (Exception ex) {
+			System.out.println("ex in cart cons");
+			ex.printStackTrace();
 			ss.getTransaction().rollback();
+			;
+		} finally {
+
 		}
 
 		selected = null;
-		currentRow = new Member();
+		currentRow = new Cart();
 	}
 
-	public Member getCurrentRow() {
+	public Cart getCurrentRow() {
 		return currentRow;
 	}
 
-	public void setCurrentRow(Member currentRow) {
+	public void setCurrentRow(Cart currentRow) {
 		this.currentRow = currentRow;
 	}
 
@@ -304,19 +296,19 @@ public class Members implements Serializable {
 		System.out.println("close called");
 	}
 
-	public List<Member> getMembers() {
-		return members;
+	public List<Cart> getCarts() {
+		return carts;
 	}
 
-	public void setMembers(List<Member> members) {
-		this.members = members;
+	public void setCarts(List<Cart> carts) {
+		this.carts = carts;
 	}
 
-	public Member getSelected() {
+	public Cart getSelected() {
 		return selected;
 	}
 
-	public void setSelected(Member selected) {
+	public void setSelected(Cart selected) {
 		this.selected = selected;
 	}
 

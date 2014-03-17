@@ -31,8 +31,6 @@
 }
 </style>
 	</h:head>
-
-
 	<h:body>
 
 		<p:layout fullPage="true">
@@ -59,18 +57,20 @@
 			</p:layoutUnit>
 
 			<p:layoutUnit id="left" position="west" size="200" resizable="true"
-				closable="true" collapsible="true" header="Options" minSize="200">
+				closable="true" collapsible="true" header="#{msg.menu}" minSize="200">
 				<p:accordionPanel>
-					<p:tab title="Menu 1">
+					<p:tab title="#{msg.processes}">
 						<br />
-						<h:outputLink value="members#{app.extention}">#{msg.members}</h:outputLink>
+						<h:outputLink rendered="#{login.status eq 'ADMIN'}" value="members#{app.extention}">#{msg.members}</h:outputLink>
+						<br />
+						<h:outputLink  value="carts#{app.extention}">#{msg.carts}</h:outputLink>
 						<br />
 					</p:tab>
 
 				</p:accordionPanel>
 			</p:layoutUnit>
 
-			<p:layoutUnit id="right" position="east" size="200" header="Gallery"
+			<p:layoutUnit id="right" position="east" size="200" header="#{msg.processes}"
 				resizable="true" closable="true" collapsible="true"
 				style="text-align:center">
 

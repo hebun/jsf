@@ -10,5 +10,13 @@
     <h:body bgcolor="white">
     	<h3>Everything went right!</h3>
     	<h4>Welcome #{helloBean.name}</h4>
+    		<p:column headerText="Email" id="email">        #{var.email}  
+			        </p:column>
+						<p:column headerText="Sirket" id="company"> 	       #{var.company}  
+					 </p:column>
+						<p:column headerText="Yetkili" id="yetkili"> 	       #{var.yetkili}  
+					 </p:column>
+						<p:column headerText="Username" id="username"> 	       #{var.username}  
+					 </p:column>
     </h:body>
 </html>
